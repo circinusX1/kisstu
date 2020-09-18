@@ -1,0 +1,13 @@
+x{
+    label_y {1,3,4}
+    some {sdfgsdf,"sdf to come"}
+    list{
+        sadf,
+        asdf,
+        asdf,
+        object{d,d,d,sdf,1,3,4,"a string"}
+    }
+}
+
+
+
