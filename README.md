@@ -23,9 +23,8 @@ x{
 
 ```
    * string based.
-   * why having some.toInt()  some.toString()  some.toFLoat() and delegate the type convertions into parsers
-   * have it an know it, allways returns std_string, then covert it.
-   
+   * why having some.toInt()  some.toString()  some.toFloat() and delegate the type convertions into parsers, use strings and do conversion on the fly
+      
 ### Lookup
    ```
    const Aka& pd = (*_pnode)["x"]["list"]["object"];
