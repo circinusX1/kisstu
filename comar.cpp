@@ -1,6 +1,4 @@
-
-#   include <iostream>
-
+#include <iostream>
 #include <assert.h>
 #include <algorithm>
 #include <iostream>
@@ -40,6 +38,7 @@ public:
         Aka* store_it(std::string& name){
             Aka* paka = new Aka(Aka::eLEAF, name);
             paka->_parent = this;
+            _type = eNODE;
             this->_values.push_back(paka);
             name.clear();
             return paka;
@@ -66,6 +65,17 @@ public:
             return _values;
         }
 
+        const std::string value(int index=0)const{
+            static std::string empty="";
+            if(_values.size()>=index)
+                return _values[index]->_name;
+            return empty;
+        }
+
+        size_t count()const{
+            return _values.size();
+        }
+
     private:
         std::string                 _name;
         std::vector<Aka*>           _values;
@@ -73,11 +83,20 @@ public:
         Aka::E_TYPE                 _type;
     };
 
+public:
     AkaJson(const char* fname):_pnode(nullptr)
     {
         _parse(fname);
     }
+    // looup todo
+    const AkaJson::Aka& operator[](const char* key)const
+    {
+        return _pnode->operator[](key);
+    }
+    const std::string value(const char* key)const{
+        const Aka& raka = _pnode->operator[](key);
 
+    }
 private:
     void _parse(const char* fname)
     {
@@ -128,11 +147,8 @@ private:
         }
 
         print(_pnode, 0);
-        
 
 
-        const Aka& pd = (*_pnode)["x"]["list"]["object"];
-        print(&pd, 0);
     }
 
     Aka* _new()
@@ -175,7 +191,6 @@ private:
         }
         --depth;
     }
-    // looup todo
 
     //
 
@@ -192,6 +207,16 @@ private:
 int main(void)
 {
     AkaJson aj("./test.comar");
+
+    const AkaJson::Aka& pd = aj["x"]["list"]["object"];\
+    for(size_t i=0;i<pd.count();i++)
+    {
+        const std::string& v = pd.value(i);
+        OOO << v.c_str() << "\n";
+    }
+    const std::string& pi = aj["x"]["pi"].value();
+    
+
     return 1;
 }
 
