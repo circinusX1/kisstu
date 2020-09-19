@@ -58,6 +58,6 @@ x{
 ### TODO
    * optimised lookup
    * runtime build the doc
-   * make references int withn like x{@label}
+   * make references int withn like key{&value}  or key{&value}
 
 
