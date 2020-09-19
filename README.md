@@ -9,7 +9,7 @@
 
 ### Just like that
 
-```
+```cpp
 # run
 g++ ./comar.cpp -o comar
 ./comar
@@ -17,14 +17,18 @@ g++ ./comar.cpp -o comar
 # sintax 
 
 x{
+    width{100}
+    height{200}
     label_y {1,3,4}
     some {sdfgsdf,"sdf to come"}
     list{
         sadf,
         asdf,
         asdf,
-        object{d,d,d,sdf,1,3,4,"a string"}
+        object{d,d,d,sdf,1,3,4,"a string"}  // will fix the space for long strings
     }
+    rect {45,45,45,45}
+    size{&width,&height}                    // will support backward links
 }
 
 ```
@@ -32,13 +36,14 @@ x{
    * why having some.toInt()  some.toString()  some.toFloat() and delegate the type convertions into parsers, use strings and do conversion on the fly
    * like using the std  std::stof() std::stod() std::stold() 
 
-```   
+```cpp   
  float pi = std::stof ( aj["x"]["pi"].value() );
  
 ```
   
 ### Lookup
-   ```
+ 
+ ```cpp
    const Aka& pd = aka["x"]["list"]["object"];
    size_t  elems = pd.count();
    for(size_t i=0;i<pd.count();i++)
@@ -48,9 +53,11 @@ x{
    }
 
    
-   ```
+ ```
    
 ### TODO
    * optimised lookup
    * runtime build the doc
    * make references int withn like x{@label}
+
+
