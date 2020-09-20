@@ -9,6 +9,17 @@ x{
         asdf,
         object{d,d,d,sdf,1,3,4,"a string"}
     }
+    xi{
+        rect{1000,
+             10,
+             $MAX,
+             $MAX,
+             sz{11,22}
+        }
+        size{44}
+        # references relative and form root
+        shape{@../rect[2], @/xi/rect/sz}
+    }
 }
 
 

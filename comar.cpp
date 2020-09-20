@@ -1,3 +1,5 @@
+
+#include <assert.h>
 #include <iostream>
 #include <assert.h>
 #include <algorithm>
@@ -12,31 +14,33 @@
 #define OOO std::cout
 
 
-class AkaJson
+class COmarius
 {
 public:
 
-    class Aka
+    class Node
     {
     public:
-        friend class AkaJson;
-        enum E_TYPE{eNODE,eLEAF};
-        Aka(Aka::E_TYPE t, const std::string& name):_name(name),_type(t){
+        friend class COmarius;
+        enum E_TYPE{eNULL,eNODE,eLEAF};
+        Node(Node::E_TYPE t, const std::string& name):_name(name),_type(t){
             _parent=nullptr;
         }
-        Aka(Aka::E_TYPE t):_type(t){
+        Node(Node::E_TYPE t=eNULL):_type(t){
             _parent=nullptr;
         }
-        ~Aka(){
+        ~Node(){
             for(const auto& a : _values)
                 delete a;
         }
+        const std::string& nv()const{return _name;};
+        bool ok()const{return _type!=eNULL;}
         void name_it(std::string& name){
             _name = name;
             name.clear();
         }
-        Aka* store_it(std::string& name){
-            Aka* paka = new Aka(Aka::eLEAF, name);
+        Node* store_it(std::string& name){
+            Node* paka = new Node(Node::eLEAF, name);
             paka->_parent = this;
             _type = eNODE;
             this->_values.push_back(paka);
@@ -44,65 +48,132 @@ public:
             return paka;
         }
 
-        const Aka& operator[](const char* key)const
+        const Node& operator[](const char* key)const
         {
             if(key==_name)
                 return *this;
             for(const auto& a : _values)
             {
-                if(a->_name==key)
+                if(a->_name==key){
+                    // cannot have parent and first child
+                    assert(this->_name!=key);
                     return *a;
+                }
             }
-            static Aka Dummy(Aka::eLEAF);
+
+            static Node Dummy;
             return Dummy;
         }
 
-        const Aka* parent(){
+        const Node* parent(){
             return _parent;
         }
 
-        const std::vector<Aka*>& values(){
+        const std::vector<Node*>& values(){
             return _values;
+        }
+
+        const Node& node(int index=0)const{
+            static Node empty;
+            if(_values.size() && _values.size()>=index)
+                return *_values[index];
+            return empty;
         }
 
         const std::string value(int index=0)const{
             static std::string empty="";
-            if(_values.size()>=index)
-                return _values[index]->_name;
+            if(_values.size() && _values.size()>=index)
+            {
+                const std::string& v = _values[index]->_name;
+                if(v[0]!='@')
+                    return v;
+                bool indexing=false;
+                std::string ev,idx;
+                const Node* pn = this;
+                // @../../rect/sss/sss[2],@/x/sdf/size
+                for(const auto& a : v)
+                {
+                    if(a=='@')continue;
+                    if(a=='/'){
+                        if(ev==".."){
+                            pn=pn->_parent;
+                        }else{
+                            if(ev.empty()){
+                                pn=pn->_root();
+                            }
+                            else{
+                                pn=pn->_at(ev);
+                            }
+                        }
+                        ev.clear();
+                        continue;
+                    }else{
+                        if(a=='['){
+                            indexing=true;
+                            continue;
+                        }
+                        if(a==']'){
+                            indexing=false;
+                            continue;
+                        }
+                    }
+                    if(indexing)
+                        idx+=a;
+                    else
+                        ev += a;
+                }//for
+                pn = pn->_at(ev);
+                size_t dx = !idx.empty() ? std::stod(idx) : 0;
+                if(pn->_values.size()>dx)
+                    return pn->_values[dx]->_name;
+            }
             return empty;
         }
 
         size_t count()const{
             return _values.size();
         }
+private:
+        const Node* _root()const {
+            const Node* pn = this;
+            while(pn->_parent)
+                pn=pn->_parent;
+            return pn;
+        }
+
+        const Node* _at(const std::string& s)const {
+            for(const auto& a : _values){
+                if(a->_name==s){
+                    return a;
+                }
+            }
+            return nullptr;
+        }
 
     private:
         std::string                 _name;
-        std::vector<Aka*>           _values;
-        Aka*                        _parent;
-        Aka::E_TYPE                 _type;
+        std::vector<Node*>             _values;
+        Node*                        _parent;
+        Node::E_TYPE                 _type;
     };
 
 public:
-    AkaJson(const char* fname):_pnode(nullptr)
+    COmarius(const char* fname):_pnode(nullptr)
     {
         _parse(fname);
     }
     // looup todo
-    const AkaJson::Aka& operator[](const char* key)const
+    const COmarius::Node& operator[](const char* key)const
     {
         return _pnode->operator[](key);
     }
-    const std::string value(const char* key)const{
-        const Aka& raka = _pnode->operator[](key);
 
-    }
 private:
     void _parse(const char* fname)
     {
         char p = 0;
-        Aka* paka = nullptr;
-        Aka* parent = nullptr;
+        Node* paka = nullptr;
+        Node* parent = nullptr;
         std::ifstream fi(fname);
         if(fi.is_open())
         {
@@ -114,6 +185,7 @@ private:
                     continue;
                 for(const auto f : _line)
                 {
+                    if(f=='#'){ break; }
                     switch(f)
                     {
                     case '\t':
@@ -144,22 +216,19 @@ private:
                     }
                 }
             }
+            print(_pnode, 0);
         }
-
-        print(_pnode, 0);
-
-
     }
 
-    Aka* _new()
+    Node* _new()
     {
         if(_pnode==nullptr)
         {
-            _pnode=new Aka(Aka::eNODE);
+            _pnode=new Node(Node::eNODE);
             _pnode->_parent = _pnode;
             return _pnode;
         }
-        return new Aka(Aka::eLEAF);
+        return new Node(Node::eLEAF);
     }
 
 
@@ -169,7 +238,7 @@ private:
         _string.clear();
     }
 
-    void print(const Aka* p, int depth)
+    void print(const Node* p, int depth)
     {
         ++depth;
         //OOO << "\n";
@@ -198,30 +267,35 @@ private:
 
     std::string             _string;
     std::string             _line;
-    Aka*                    _pnode = nullptr;
+    Node*                    _pnode = nullptr;
     bool                    _escap=false;
     bool                    _toking=false;
+    bool                    _refon=false;
 };
 
 
 int main(void)
 {
-    AkaJson aj("./test.comar");
+    COmarius aj("./test.comar");
 
-    const AkaJson::Aka& pd = aj["x"]["list"]["object"];\
-    for(size_t i=0;i<pd.count();i++)
+
+    const COmarius::Node& nod2 = aj["x"]["xi"]["shape"];
+    std::string el;
+    if(nod2.ok())
     {
-        const std::string& v = pd.value(i);
-        OOO << v.c_str() << "\n";
+        std::cout << nod2.value(0);
+
+        std::cout << nod2.value(1);
     }
-    const std::string& pi = aj["x"]["pi"].value();
-    
+
+    const COmarius::Node& nod = aj["x"];
+    std::cout << nod.count() << "\n";
+
+    for(size_t t= 0; t<nod.count();t++)
+    {
+        const COmarius::Node& nodc = nod.node(t);
+        std::cout << nodc.nv() << "\n";
+    }
 
     return 1;
 }
-
-
-
-
-
-
