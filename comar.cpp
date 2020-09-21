@@ -57,12 +57,59 @@ public:
                 if(a->_name==key){
                     // cannot have parent and first child
                     assert(this->_name!=key);
+/*
+                    if(a->_name.at(0)=='@')
+                    {
+                        std::string idx;
+                        return *_get_ref((const Node*)&a, a->_name, idx);
+                    }
+*/
                     return *a;
                 }
             }
 
             static Node Dummy;
             return Dummy;
+        }
+
+        const Node* _get_ref(const Node* pn, const std::string& v, std::string& idx)const
+        {
+            bool indexing=false;
+            std::string ev;
+            for(const auto& a : v)
+            {
+                if(a=='@')continue;
+                if(a=='&')continue;
+                if(a=='/'){
+                    if(ev==".."){
+                        pn=pn->_parent;
+                    }else{
+                        if(ev.empty()){
+                            pn=pn->_root();
+                        }
+                        else{
+                            pn=pn->_at(ev);
+                        }
+                    }
+                    ev.clear();
+                    continue;
+                }else{
+                    if(a=='['){
+                        indexing=true;
+                        continue;
+                    }
+                    if(a==']'){
+                        indexing=false;
+                        continue;
+                    }
+                }
+                if(indexing)
+                    idx+=a;
+                else
+                    ev += a;
+            }//for
+            pn = pn->_at(ev);
+            return pn;
         }
 
         const Node* parent(){
@@ -82,47 +129,26 @@ public:
 
         const std::string value(int index=0)const{
             static std::string empty="";
-            if(_values.size() && _values.size()>=index)
+            if(_values.size() )
             {
-                const std::string& v = _values[index]->_name;
-                if(v[0]!='@')
+                std::string v;
+                std::string idx = "0";
+                if(_values.size()>index){
+                    v = _values[index]->_name;
+                }
+                else{
+                    v = _values[0]->_name;
+                    idx = std::to_string(index);
+                }
+
+                if(v[0]!='@' && v[0]!='&') // value reference
                     return v;
-                bool indexing=false;
-                std::string ev,idx;
+
                 const Node* pn = this;
+
                 // @../../rect/sss/sss[2],@/x/sdf/size
-                for(const auto& a : v)
-                {
-                    if(a=='@')continue;
-                    if(a=='/'){
-                        if(ev==".."){
-                            pn=pn->_parent;
-                        }else{
-                            if(ev.empty()){
-                                pn=pn->_root();
-                            }
-                            else{
-                                pn=pn->_at(ev);
-                            }
-                        }
-                        ev.clear();
-                        continue;
-                    }else{
-                        if(a=='['){
-                            indexing=true;
-                            continue;
-                        }
-                        if(a==']'){
-                            indexing=false;
-                            continue;
-                        }
-                    }
-                    if(indexing)
-                        idx+=a;
-                    else
-                        ev += a;
-                }//for
-                pn = pn->_at(ev);
+                pn = _get_ref(pn, v, idx);
+
                 size_t dx = !idx.empty() ? std::stod(idx) : 0;
                 if(pn->_values.size()>dx)
                     return pn->_values[dx]->_name;
@@ -147,7 +173,8 @@ private:
                     return a;
                 }
             }
-            return nullptr;
+            static Node empty;
+            return &empty;
         }
 
     private:
@@ -158,20 +185,24 @@ private:
     };
 
 public:
-    COmarius(const char* fname):_pnode(nullptr)
+    COmarius():_pnode(nullptr)
     {
-        _parse(fname);
+
     }
     // looup todo
     const COmarius::Node& operator[](const char* key)const
     {
         return _pnode->operator[](key);
     }
-
+    void parse(const char* fname)
+    {
+        _parse(fname);
+    }
 private:
     void _parse(const char* fname)
     {
-        char p = 0;
+        char p     = 0;
+        int line   =1;
         Node* paka = nullptr;
         Node* parent = nullptr;
         std::ifstream fi(fname);
@@ -179,6 +210,7 @@ private:
         {
             while (std::getline(fi, _line))
             {
+                ++line;
                 char prev = 0;
                 std::istringstream iss(_line);
                 if(_line.empty() || _line[0]=='#')
@@ -201,6 +233,9 @@ private:
                             parent->_values.push_back(paka);
                         break;
                     case '}':
+                        if(paka==nullptr){
+                            throw line;
+                        }
                         if(!_string.empty())
                         {
                             paka->store_it(_string);
@@ -276,26 +311,22 @@ private:
 
 int main(void)
 {
-    COmarius aj("./test.comar");
+    COmarius aj;
 
-
-    const COmarius::Node& nod2 = aj["x"]["xi"]["shape"];
-    std::string el;
-    if(nod2.ok())
+    try{
+        aj.parse("./test.comar");
+    }catch(int line)
     {
-        std::cout << nod2.value(0);
-
-        std::cout << nod2.value(1);
+        std::cerr << "error parsing line " << line << "\n";
+        return  -1;
     }
 
-    const COmarius::Node& nod = aj["x"];
-    std::cout << nod.count() << "\n";
+    std::string el = aj["x"]["xi"]["shape"].value(0);
+    el = aj["x"]["xi"]["shape"].value(1);
+    const COmarius::Node& n = aj["x"]["xi"]["r2"];
+    el = n.value(0);
+    el = n.value(1);
 
-    for(size_t t= 0; t<nod.count();t++)
-    {
-        const COmarius::Node& nodc = nod.node(t);
-        std::cout << nodc.nv() << "\n";
-    }
 
     return 1;
 }
