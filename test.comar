@@ -1,14 +1,18 @@
 x{
+    long{"a long string with escape \" and \\  and \} and \{ and \, characters "}
     xi{
         rect{
              1000,
              10,
              $MAX,
-             $MAY
+             $MAY,
              sz{11,22}
         }
         size{44}
+# ref to value. shape[0]=rect[2] and size[0]
+# refs to values must have []
         shape{@../rect[2], @/xi/size[0]}
+# r2 is a rect
         r2{&../rect}
     }
 }

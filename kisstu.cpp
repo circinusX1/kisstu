@@ -14,14 +14,16 @@
 #define OOO std::cout
 
 
-class COmarius
+class Kisstu
 {
 public:
 
     class Node
     {
     public:
-        friend class COmarius;
+        friend class Kisstu;
+
+    protected:
         enum E_TYPE{eNULL,eNODE,eLEAF};
         Node(Node::E_TYPE t, const std::string& name):_name(name),_type(t){
             _parent=nullptr;
@@ -39,6 +41,7 @@ public:
             _name = name;
             name.clear();
         }
+
         Node* store_it(std::string& name){
             Node* paka = new Node(Node::eLEAF, name);
             paka->_parent = this;
@@ -46,6 +49,20 @@ public:
             this->_values.push_back(paka);
             name.clear();
             return paka;
+        }
+public:
+        const Node* top()const{
+            return _root();
+        }
+
+        void  add( Node* pn){
+            this->_type = Node::eNODE;
+            this->_values.push_back(pn);
+        }
+
+        const Node* add(const char* value){
+            std::string sv(value);
+            store_it(sv);
         }
 
         const Node& operator[](const char* key)const
@@ -57,13 +74,6 @@ public:
                 if(a->_name==key){
                     // cannot have parent and first child
                     assert(this->_name!=key);
-/*
-                    if(a->_name.at(0)=='@')
-                    {
-                        std::string idx;
-                        return *_get_ref((const Node*)&a, a->_name, idx);
-                    }
-*/
                     return *a;
                 }
             }
@@ -71,7 +81,7 @@ public:
             static Node Dummy;
             return Dummy;
         }
-
+protected:
         const Node* _get_ref(const Node* pn, const std::string& v, std::string& idx)const
         {
             bool indexing=false;
@@ -120,14 +130,15 @@ public:
             return _values;
         }
 
-        const Node& node(int index=0)const{
+        const Node& node(size_t index=0)const{
             static Node empty;
             if(_values.size() && _values.size()>=index)
                 return *_values[index];
             return empty;
         }
 
-        const std::string value(int index=0)const{
+public:
+        const std::string value(size_t index=0)const{
             static std::string empty="";
             if(_values.size() )
             {
@@ -178,19 +189,19 @@ private:
         }
 
     private:
-        std::string                 _name;
-        std::vector<Node*>             _values;
+        std::string                  _name;
+        std::vector<Node*>           _values;
         Node*                        _parent;
         Node::E_TYPE                 _type;
     };
 
 public:
-    COmarius():_pnode(nullptr)
+    Kisstu():_pnode(nullptr)
     {
 
     }
     // looup todo
-    const COmarius::Node& operator[](const char* key)const
+    const Kisstu::Node& operator[](const char* key)const
     {
         return _pnode->operator[](key);
     }
@@ -198,11 +209,25 @@ public:
     {
         _parse(fname);
     }
+
+    // construct  a tree
+    Node* begin(const char* n)
+    {
+        assert(_pnode == nullptr);
+        _pnode = new Node(Node::eNODE, n);
+        return _pnode;
+    }
+
+    Node* make(const char* n){return new Node(Node::eNODE, n);}
+    Node* root()const {return _pnode;}
+
 private:
     void _parse(const char* fname)
     {
         char p     = 0;
         int line   =1;
+        bool  longstr = false;
+        bool  escaping = false;
         Node* paka = nullptr;
         Node* parent = nullptr;
         std::ifstream fi(fname);
@@ -217,13 +242,39 @@ private:
                     continue;
                 for(const auto f : _line)
                 {
-                    if(f=='#'){ break; }
+                    if(f=='#'){ _line.empty(); break; }
                     switch(f)
                     {
                     case '\t':
                     case ' ':
+                        if(longstr){
+                            _string+=f;
+                        }
+                        break;
+                    case '\\':
+                        if(escaping)
+                        {
+                            _string+=f;
+                            escaping=false;
+                        }
+                        else{
+                            escaping=true;
+                        }
+                        break;
+                    case '\"':
+                        if(escaping){
+                            _string+=f;
+                            escaping=false;
+                        }
+                        else
+                            longstr = !longstr;
                         break;
                     case '{':
+                        if(escaping){
+                             _string+=f;
+                            escaping=false;
+                            break;
+                        }
                         parent = paka;
                         paka = _new();
                         paka->_name=_string;
@@ -233,6 +284,11 @@ private:
                             parent->_values.push_back(paka);
                         break;
                     case '}':
+                        if(escaping){
+                             _string+=f;
+                            escaping=false;
+                            break;
+                        }
                         if(paka==nullptr){
                             throw line;
                         }
@@ -243,6 +299,11 @@ private:
                         paka = paka->_parent;
                         break;
                     case ',':
+                        if(escaping){
+                             _string+=f;
+                            escaping=false;
+                            break;
+                        }
                         paka->store_it(_string);
                         break;
                     default:
@@ -251,7 +312,7 @@ private:
                     }
                 }
             }
-            print(_pnode, 0);
+
         }
     }
 
@@ -273,6 +334,7 @@ private:
         _string.clear();
     }
 
+public:
     void print(const Node* p, int depth)
     {
         ++depth;
@@ -296,37 +358,68 @@ private:
         --depth;
     }
 
-    //
-
 private:
 
     std::string             _string;
     std::string             _line;
-    Node*                    _pnode = nullptr;
+    Node*                   _pnode = nullptr;
     bool                    _escap=false;
     bool                    _toking=false;
     bool                    _refon=false;
 };
 
 
-int main(void)
+void read()
 {
-    COmarius aj;
+    Kisstu aj;
 
     try{
         aj.parse("./test.comar");
+        aj.print(aj.root(), 0);
     }catch(int line)
     {
         std::cerr << "error parsing line " << line << "\n";
-        return  -1;
+        return ;
     }
 
     std::string el = aj["x"]["xi"]["shape"].value(0);
     el = aj["x"]["xi"]["shape"].value(1);
-    const COmarius::Node& n = aj["x"]["xi"]["r2"];
+    const Kisstu::Node& n = aj["x"]["xi"]["r2"];
     el = n.value(0);
     el = n.value(1);
 
 
+}
+
+void construct()
+{
+    Kisstu aj;
+
+    Kisstu::Node* root = aj.begin("root");
+    root->add("string-value");
+    root->add("allways string-value");
+
+    Kisstu::Node* keyval = aj.make("key");
+    keyval->add("value");
+    root->add(keyval);
+
+    Kisstu::Node* rect = aj.make("colorred_rect");
+    rect->add("2,2,100,100");
+
+    Kisstu::Node* color = aj.make("color");
+    color->add("255,255,255");
+
+    rect->add(color);
+
+    root->add(rect);
+
+    aj.print(aj.root(), 0);
+}
+
+
+int main(void)
+{
+    read();
+    construct();
     return 1;
 }
