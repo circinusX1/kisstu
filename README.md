@@ -20,7 +20,7 @@ x{
     width{100}
     height{200}
     label_y {1,3,4}
-    some {sdfgsdf,"sdf to come"}
+    escaping {"sdfgsdf \"  and \{  and \} and \, and \" also in a long string "}
     list{
         sadf,
         asdf,
@@ -54,6 +54,30 @@ x{
 
    
  ```
+ 
+### making
+
+```cpp
+    Kisstu aj;
+
+    Kisstu::Node* root = aj.begin("root");
+    root->add("string-value");
+    root->add("allways string-value");
+
+    Kisstu::Node* keyval = aj.make("key");
+    keyval->add("value");
+    root->add(keyval);
+
+    Kisstu::Node* rect = aj.make("colorred_rect");
+    rect->add("2,2,100,100");
+
+    Kisstu::Node* color = aj.make("color");
+    color->add("255,255,255");
+
+    rect->add(color);
+    root->add(rect);
+    aj.print(aj.root(), 0);
+```
    
 ### TODO
    * optimised lookup
