@@ -1,4 +1,5 @@
-# comar very dumb  alternative to JSON
+# kisstu: 
+### dumb  alternative to JSON 
 
    * simple JSON alternative, string based
    * 100 lines parser
