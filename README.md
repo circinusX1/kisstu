@@ -11,7 +11,7 @@
 #### syntax
 
 ```
-  KEY{ENTITY}
+  KEY{ENTITY,<ENTITY>...}
   where
     ENTITY=string
     ENTITY=KEY{ENTITY}
