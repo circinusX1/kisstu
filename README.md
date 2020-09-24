@@ -8,7 +8,17 @@
 
 ### Work in progress.
 
+#### syntax
+
+```
+  KEY{ENTITY}
+  where
+    ENTITY=string
+    ENTITY=KEY{ENTITY}
+```
+
 ### Just like that
+
 
 ```cpp
 # run
