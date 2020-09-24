@@ -39,7 +39,9 @@ x{
         object{d,d,d,sdf,1,3,4,"a string"}  // will fix the space for long strings
     }
     rect {45,45,45,45}
-    size{&width,&height}                    // will support backward links
+    # almost supports references. Not fully tested
+    size{../@width,x/@height}                    // o["x"]["size"](0) = 100 & o["x"]["size"](1) = 200
+    label2{@x/label_y}                           // o["x"]["label2"] = {1,3,4}
 }
 
 ```
