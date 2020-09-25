@@ -211,3 +211,21 @@ _icon = s.value("Icon").toString();
 
 ```
 
+#### more examples
+
+##### no root document. The parser creates a root for all 3 nodes
+
+```
+key{value}
+key1{value}
+key2{value}
+```
+
+##### mixed style {} and : (- and = applyes where the value is a string. wont wprk for leaf/nodes objects using{} )
+
+```
+key{value}
+key1=value;
+key2:value;
+```
+
