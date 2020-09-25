@@ -1,5 +1,9 @@
-# kisstu: 
-### dumb  alternative to JSON 
+# CDBL Curly Bracket DOcument Layout
+# Sept 25 2020
+### FreeBSD License
+#### Existent parser is for demo purposes.
+
+### An Alternative to JSON 
 
    * simple JSON alternative, string based
    * 100 lines parser
