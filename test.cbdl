@@ -15,6 +15,9 @@ x{
 # r2 is a rect
         r2{&../rect}
     }
+#must end in , for simple values;
+    also_with_equal=333;
+    also_with:has_column;
 }
 
 

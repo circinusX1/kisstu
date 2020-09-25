@@ -1,11 +1,26 @@
+/**
+  Curly Bracket Document Layout  CBDL
 
+Copyright (C) [2020] by marius chincisan marrius9876@gmail.com
+
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
+
+*/
 #include <assert.h>
 #include <iostream>
 #include <assert.h>
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <string>
 #include <vector>
 #include <utility>
@@ -14,14 +29,14 @@
 #define OOO std::cout
 
 
-class Kisstu
+class Cbdler
 {
 public:
 
     class Node
     {
     public:
-        friend class Kisstu;
+        friend class Cbdler;
 
     protected:
         enum E_TYPE{eNULL,eNODE,eLEAF};
@@ -32,8 +47,10 @@ public:
             _parent=nullptr;
         }
         ~Node(){
+            _name.clear();
             for(const auto& a : _values)
                 delete a;
+            _values.clear();
         }
         const std::string& nv()const{return _name;};
         bool ok()const{return _type!=eNULL;}
@@ -55,7 +72,7 @@ public:
             return _root();
         }
 
-        void  add( Node* pn){
+        void  add(Node* pn){
             this->_type = Node::eNODE;
             this->_values.push_back(pn);
         }
@@ -63,6 +80,7 @@ public:
         const Node* add(const char* value){
             std::string sv(value);
             store_it(sv);
+            return this;
         }
 
         const Node& operator[](const char* key)const
@@ -81,6 +99,8 @@ public:
             static Node Dummy;
             return Dummy;
         }
+
+        bool is_node()const{return _type==Node::eNODE;}
 protected:
         const Node* _get_ref(const Node* pn, const std::string& v, std::string& idx)const
         {
@@ -131,15 +151,20 @@ protected:
         }
 
         const Node& node(size_t index=0)const{
-            static Node empty;
+            static Node empty(Node::eNULL,"~error~");
             if(_values.size() && _values.size()>=index)
                 return *_values[index];
             return empty;
         }
 
 public:
+        const Node* pnode(const char* s)const {
+            std::string ss = s;
+            return _at(ss);
+        }
+
         const std::string value(size_t index=0)const{
-            static std::string empty="";
+            static std::string empty="~error~";
             if(_values.size() )
             {
                 std::string v;
@@ -152,17 +177,19 @@ public:
                     idx = std::to_string(index);
                 }
 
-                if(v[0]!='@' && v[0]!='&') // value reference
+                if(v[0]!='@') // value reference
                     return v;
 
                 const Node* pn = this;
 
                 // @../../rect/sss/sss[2],@/x/sdf/size
                 pn = _get_ref(pn, v, idx);
-
-                size_t dx = !idx.empty() ? std::stod(idx) : 0;
-                if(pn->_values.size()>dx)
-                    return pn->_values[dx]->_name;
+                if(pn!=nullptr)
+                {
+                    size_t dx = !idx.empty() ? std::stod(idx) : 0;
+                    if(pn->_values.size()>dx)
+                        return pn->_values[dx]->_name;
+                }
             }
             return empty;
         }
@@ -170,6 +197,7 @@ public:
         size_t count()const{
             return _values.size();
         }
+
 private:
         const Node* _root()const {
             const Node* pn = this;
@@ -188,6 +216,19 @@ private:
             return &empty;
         }
 
+        void _del_node(Node* pn)
+        {
+            std::vector<Node*>::iterator i = _values.begin();
+            for(;i!=_values.end();++i){
+                if((*i) == pn)
+                {
+                    delete pn;
+                    _values.erase(i);
+                    break;
+                }
+            }
+        }
+
     private:
         std::string                  _name;
         std::vector<Node*>           _values;
@@ -196,18 +237,21 @@ private:
     };
 
 public:
-    Kisstu():_pnode(nullptr)
+    Cbdler():_pnode(nullptr)
     {
 
     }
     // looup todo
-    const Kisstu::Node& operator[](const char* key)const
+    const Cbdler::Node& operator[](const char* key)const
     {
         return _pnode->operator[](key);
     }
-    void parse(const char* fname)
+    Node* parse(const char* fname)
     {
-        _parse(fname);
+        if(_pnode)
+            delete _pnode;
+        _pnode = nullptr;
+        return _parse(fname);
     }
 
     // construct  a tree
@@ -222,10 +266,13 @@ public:
     Node* root()const {return _pnode;}
 
 private:
-    void _parse(const char* fname)
+    Node* _parse(const char* fname)
     {
-        char p     = 0;
-        int line   =1;
+        char  p    = 0;
+        int   line = 1;
+        int   oc   = 0;
+        int   eq   = 0;
+        int   els  = 0;
         bool  longstr = false;
         bool  escaping = false;
         Node* paka = nullptr;
@@ -238,8 +285,17 @@ private:
                 ++line;
                 char prev = 0;
                 std::istringstream iss(_line);
-                if(_line.empty() || _line[0]=='#')
-                    continue;
+                if(!escaping && !longstr){
+                    if(_line.empty() || _line[0]=='#')
+                        continue;
+                    if(eq){
+                        std::cerr<<" line:" << line << " missing ; at the end when using = or : \n";                    throw 2;
+                    }
+                }
+                if(longstr){
+                    _line+="\n";
+                }
+
                 for(const auto f : _line)
                 {
                     if(f=='#'){ _line.empty(); break; }
@@ -269,11 +325,24 @@ private:
                         else
                             longstr = !longstr;
                         break;
+                    case ':':
+                    case '=':
+                        eq=true;
                     case '{':
                         if(escaping){
                              _string+=f;
                             escaping=false;
                             break;
+                        }
+                        // doc has no root, make one and link it to curent first one
+                        if(els==1 && paka==nullptr)
+                        {
+                            Node* root   = new Node(Node::eNODE,"");
+                            Node* curent = _pnode;
+                            root->add(curent);
+                            curent->_parent = root;
+                            _pnode = root;
+                            paka = root;
                         }
                         parent = paka;
                         paka = _new();
@@ -282,8 +351,11 @@ private:
                         _string.clear();
                         if(paka!=parent && parent)
                             parent->_values.push_back(paka);
+                        ++oc;
                         break;
                     case '}':
+                    case ';':
+                        eq=false;
                         if(escaping){
                              _string+=f;
                             escaping=false;
@@ -294,9 +366,42 @@ private:
                         }
                         if(!_string.empty())
                         {
-                            paka->store_it(_string);
+                            if(!paka->_name.empty())
+                            {
+                                if(paka->_name=="%include")
+                                {
+                                    Cbdler sub;
+                                    Node* pn = sub.parse(_string.c_str());
+                                    if(pn)
+                                    {
+                                        if(_pnode==nullptr)
+                                        {
+                                            _pnode = pn;
+                                        }
+                                        else {
+                                            Node* prent = paka->_parent ? paka->_parent : _pnode;
+                                            prent->_del_node(paka);
+                                            pn->_parent = prent;
+                                            prent->add(pn);
+                                        }
+                                    }
+                                    else {
+                                        std::string subfn = _string;
+                                        _string="~failed to load ";
+                                        _string+=subfn;
+                                        paka->store_it(_string);
+                                    }
+                                    _wipe();
+                                }
+                                else
+                                {
+                                    paka->store_it(_string);
+                                }
+                            }
                         }
                         paka = paka->_parent;
+                        ++els;
+                        --oc;
                         break;
                     case ',':
                         if(escaping){
@@ -312,8 +417,14 @@ private:
                     }
                 }
             }
-
+        }else {
+            std::cerr<<"error open " << fname << "\n";
         }
+        if(oc || _pnode==nullptr){
+            std::cerr<<"document malformated";
+            throw(-1);
+        }
+        return _pnode;
     }
 
     Node* _new()
@@ -338,21 +449,21 @@ public:
     void print(const Node* p, int depth)
     {
         ++depth;
-        //OOO << "\n";
-        for(int i=0;i<depth;i++) OOO<<" ";
-
-        OOO  << p->_name.c_str() << "\n";
+        OOO << "\n";
+        for(int i=0;i<depth;i++) OOO<<"    ";
+        OOO  << p->_name.c_str();
         if(p->_values.size())
         {
-            //OOO << "\n";
-            for(int i=0;i<depth;i++) OOO<<" ";
+            OOO << "\n";
+            for(int i=0;i<depth;i++) OOO<<"    ";
             OOO << "{\n";
+
             for(const auto& a : p->_values)
             {
                 print(a,depth);
             }
-            //OOO << "\n";
-            for(int i=0;i<depth;i++) OOO<<" ";
+            OOO << "\n";
+            for(int i=0;i<depth;i++) OOO<<"    ";
             OOO << "}\n";
         }
         --depth;
@@ -371,11 +482,37 @@ private:
 
 void read()
 {
-    Kisstu aj;
+    Cbdler aj;
 
     try{
-        aj.parse("./test.comar");
+        OOO<< "test inclusion1\n";
+        aj.parse("./include1.cbdl");
         aj.print(aj.root(), 0);
+
+        OOO<< "test inclusion\n";
+        aj.parse("./include.cbdl");
+        aj.print(aj.root(), 0);
+
+        OOO<< "test 0 normal {}\n";
+        aj.parse("./test.cbdl");
+        aj.print(aj.root(), 0);
+
+
+        OOO<< "test 1, doc no root \n";
+        aj.parse("./test1.cbdl");
+        aj.print(aj.root(), 0);
+
+        OOO<< "test 2 using = pr : and ; \n";
+        aj.parse("./test2.cbdl");
+        aj.print(aj.root(), 0);
+
+        OOO<< "test 3 using = pr : and ; no root\n";
+        aj.parse("./test3.cbdl");
+        aj.print(aj.root(), 0);
+
+
+
+
     }catch(int line)
     {
         std::cerr << "error parsing line " << line << "\n";
@@ -384,7 +521,7 @@ void read()
 
     std::string el = aj["x"]["xi"]["shape"].value(0);
     el = aj["x"]["xi"]["shape"].value(1);
-    const Kisstu::Node& n = aj["x"]["xi"]["r2"];
+    const Cbdler::Node& n = aj["x"]["xi"]["r2"];
     el = n.value(0);
     el = n.value(1);
 
@@ -393,26 +530,26 @@ void read()
 
 void construct()
 {
-    Kisstu aj;
+     OOO<< "test 4 build doc\n";
 
-    Kisstu::Node* root = aj.begin("root");
+    Cbdler aj;
+
+    Cbdler::Node* root = aj.begin("root");
     root->add("string-value");
     root->add("allways string-value");
 
-    Kisstu::Node* keyval = aj.make("key");
+    Cbdler::Node* keyval = aj.make("key");
     keyval->add("value");
     root->add(keyval);
 
-    Kisstu::Node* rect = aj.make("colorred_rect");
+    Cbdler::Node* rect = aj.make("colorred_rect");
     rect->add("2,2,100,100");
 
-    Kisstu::Node* color = aj.make("color");
+    Cbdler::Node* color = aj.make("color");
     color->add("255,255,255");
 
     rect->add(color);
-
     root->add(rect);
-
     aj.print(aj.root(), 0);
 }
 
