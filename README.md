@@ -12,22 +12,32 @@
 #### syntax
 
 ```
+<{>
   KEY{ENTITY,<ENTITY>...}
+  KEY=STRING_VALUE;
+  KEY:STRING_VALUE;
+<}>
   where
     ENTITY=string
+    ENTITY=@path/to/another/key/from_root
+    ENTITY=@../../relative_path_to_another_key
+    ENTITY=" a atring with \" \} \{ \, \= \# \} \: escapes and apsces string"
     ENTITY=KEY{ENTITY}
+  
+```
+
+#### keywords
+
+```
+  %include:filename
+  # commented line
+ 
 ```
 
 ### Just like that
 
 
 ```cpp
-# run
-g++ ./comar.cpp -o comar
-./comar
-
-# sintax 
-
 x{
     width{100}
     height{200}
@@ -41,14 +51,18 @@ x{
     }
     rect {45,45,45,45}
     # almost supports references. Not fully tested
-    size{../@width,x/@height}                    // o["x"]["size"](0) = 100 & o["x"]["size"](1) = 200
-    label2{@x/label_y}                           // o["x"]["label2"] = {1,3,4}
+    size{../@width,x/@height}                    # o["x"]["size"](0) = 100 & o["x"]["size"](1) = 200
+    label2{@x/label_y}                           # REFERENCES o["x"]["label2"] = {1,3,4}
+    css_Style:value;
+    initstyle=sdfsdf;                               
+    %include:./otherdoc.cbdl
 }
 
 ```
    * string based.
    * why having some.toInt()  some.toString()  some.toFloat() and delegate the type convertions into parsers, use strings and do conversion on the fly
-   * like using the std  std::stof() std::stod() std::stold() 
+   * like using the std  std::stof() std::stod() std::stold()
+       *  or write an adapter. Better having in user space, and convert only what you need instead all string to types.
 
 ```cpp   
  float pi = std::stof ( aj["x"]["pi"].value() );
@@ -65,27 +79,26 @@ x{
         const std::string& v = pd.value(i);
         OOO << v.c_str() << "\n";
    }
-
    
  ```
  
 ### making
 
 ```cpp
-    Kisstu aj;
+    Cbdler aj;
 
-    Kisstu::Node* root = aj.begin("root");
+    Cbdler::Node* root = aj.begin("root");
     root->add("string-value");
     root->add("allways string-value");
 
-    Kisstu::Node* keyval = aj.make("key");
+    Cbdler::Node* keyval = aj.make("key");
     keyval->add("value");
     root->add(keyval);
 
-    Kisstu::Node* rect = aj.make("colorred_rect");
+    Cbdler::Node* rect = aj.make("colorred_rect");
     rect->add("2,2,100,100");
 
-    Kisstu::Node* color = aj.make("color");
+    Cbdler::Node* color = aj.make("color");
     color->add("255,255,255");
 
     rect->add(color);
@@ -179,11 +192,15 @@ public:
     {
         _curent = root();
     }
-
-
-
-
     const Cbdler::Node*  _curent;
 };
+// usage
+_hidden= s.value("Hidden").toBool();
+_icwh= s.value("Isize").toPoint();
+_rpos = s.value("Xrect").toInt();
+_icon = s.value("Icon").toString();
+
+
+
 ```
 
