@@ -4,7 +4,7 @@
 #### Existent parser is for demo purposes.
 
 ### Like this
-```JSON
+```cpp
 x{
     %include:./included.css;
     long{"a long string with escape \" and \\  and \} and \{ and \, characters "}
