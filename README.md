@@ -1,4 +1,4 @@
-# CDBL Curly Bracket DOcument Layout
+# CDBL Curly Bracket Document Layout
 # Sept 25 2020
 ### FreeBSD License
 #### Existent parser is for demo purposes.
