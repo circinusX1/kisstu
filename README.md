@@ -3,6 +3,31 @@
 ### FreeBSD License
 #### Existent parser is for demo purposes.
 
+### Like this
+```JSON
+x{
+    %include:./included.css;
+    long{"a long string with escape \" and \\  and \} and \{ and \, characters "}
+    xi{
+        shape{
+             rect{10,
+                  10,
+                  1000,
+                  1000}
+             color{355,255,0}
+        }
+        circle{
+          center{@../shape/rect[0],@../shape/rect[1]}
+          color{@x/x1/shape/rect/color}
+          }
+    }
+    css_style:333;         # must end with ;
+    ini_style=has_column;  # must end with ;
+    
+}
+
+```
+
 ### An Alternative to JSON 
 
    * simple JSON alternative, string based
@@ -38,29 +63,7 @@
  
 ```
 
-### Just like that
-
-
-```cpp
-x{
-    width{100}
-    height{200}
-    label_y {1,3,4}
-    escaping {"sdfgsdf \"  and \{  and \} and \, and \" also in a long string "}
-    list{
-        sadf,
-        asdf,
-        asdf,
-        object{d,d,d,sdf,1,3,4,"a string"}  // will fix the space for long strings
-    }
-    rect {45,45,45,45}
-    # almost supports references. Not fully tested
-    size{../@width,x/@height}                    # o["x"]["size"](0) = 100 & o["x"]["size"](1) = 200
-    label2{@x/label_y}                           # REFERENCES o["x"]["label2"] = {1,3,4}
-    css_Style:value;
-    initstyle=sdfsdf;                               
-    %include:./otherdoc.cbdl
-}
+#### lookup
 
 ```
    * string based.
