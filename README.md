@@ -7,15 +7,18 @@
   * no-more quotes.
   * no difference between array an a a sigle value.
   * totally string based. 
-      * Why have " for strings when you have to know the value type at coding time 99.9% of the time.
+      * Why have " " for strings when the value type has to be known at coding time 99.9% of the time,
+        and anyway anything that's not string is converted by weirdo in-parser api's.
   * has includes.
   * has references.
+  * had comments
      * I welcome anyone to join, find issues and write parsers for js, php and more.
 
 
 ### Like this
 ```cpp
 x{
+    # this is a comment
     %include:./included.css;
     long{"a long string with escape \" and \\  and \} and \{ and \, characters "}
     xi{
