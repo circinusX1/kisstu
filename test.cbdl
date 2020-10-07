@@ -13,7 +13,7 @@ x{
 # refs to values must have []
         shape{@../rect[2], @/xi/size[0]}
 # r2 is a rect
-        r2{&../rect}
+        r2{@../rect}
     }
 #must end in , for simple values;
     also_with_equal=333;
