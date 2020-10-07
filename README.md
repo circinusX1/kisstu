@@ -2,18 +2,18 @@
 ### DRAFT ISSUED ON: Sept 25 2020
 #### FreeBSD License
 #### Existent parser is for demo purposes.
+######  Please  Join if you find it usefull. In need for parsers for: JS, PHP and C++
 
 
-  * no-more quotes.
-  * no difference between array an a a sigle value.
-  * totally string based. 
+  * No-more quotes.
+  * No difference between array and a single value.
+  * String based. 
       * Why have " " for strings when the value type has to be known at coding time 99.9% of the time,
         and anyway anything that's not string is converted by weirdo in-parser api's.
-  * has includes.
-  * has references.
-  * had comments
-     * I welcome anyone to join, find issues and write parsers for js, php and more.
-
+  * Has includes.
+  * Has references.
+  * Has comments
+    
 
 ### Like this
 ```cpp
