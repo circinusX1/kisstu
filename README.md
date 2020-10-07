@@ -3,6 +3,16 @@
 ### FreeBSD License
 #### Existent parser is for demo purposes.
 
+
+  * no-more quotes.
+  * no difference between array an a a sigle value.
+  * totally string based. 
+      * Why have " for strings when you have to know the layout at coding time 99.9% of the time.
+  * has includes.
+  * has references.
+     * I welcome anyone to join, find issues and write parsers for js, php and more.
+
+
 ### Like this
 ```cpp
 x{
