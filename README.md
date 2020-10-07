@@ -46,7 +46,7 @@ x{
    * simple JSON alternative, string based
    * 100 lines parser
    * string based, encapsulate your types and do it in your space
-   * Write a wrapper in user space for custome needs is sinple (qt QSettings wrapper at the end of the post)
+   * Write an adaptor in user space for string to type(s). There is am example at the end of the readme file.
 
 
 ### Work in progress.
