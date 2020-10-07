@@ -43,12 +43,6 @@ x{
 
 ### An Alternative to JSON 
 
-   * simple JSON alternative, string based
-   * 100 lines parser
-   * string based, encapsulate your types and do it in your space
-   * Write an adaptor in user space for string to type(s). There is am example at the end of the readme file.
-
-
 ### Work in progress.
 
 #### syntax
@@ -75,24 +69,15 @@ x{
   # commented line
  
 ```
-
-#### lookup
-
-```
-   * string based.
-   * why having some.toInt()  some.toString()  some.toFloat() and delegate the type convertions into parsers, use strings and do conversion on the fly
-   * like using the std  std::stof() std::stod() std::stold()
-       *  or write an adapter. Better having in user space, and convert only what you need instead all string to types.
-
-```cpp   
- float pi = std::stof ( aj["x"]["pi"].value() );
- 
-```
   
 ### Lookup
  
  ```cpp
-   const Aka& pd = aka["x"]["list"]["object"];
+  
+  float pi = std::stof ( aj["x"]["pi"].value() );
+
+
+   const Cbdler::Node& pd = aka["x"]["list"]["object"];
    size_t  elems = pd.count();
    for(size_t i=0;i<pd.count();i++)
    {
@@ -102,7 +87,7 @@ x{
    
  ```
  
-### making
+### Making
 
 ```cpp
     Cbdler aj;
@@ -132,7 +117,7 @@ x{
    * php parser
    * python wrapper
 
-### A wrapperr to custom types
+### A wrapperr to custom types example
 
 ```cpp
 class QtKisstu : public Cbdler
@@ -224,9 +209,7 @@ _icon = s.value("Icon").toString();
 
 ```
 
-#### more examples
-
-##### no root document. The parser creates a root for all 3 nodes
+##### If there is no root document the parser creates a nameless root
 
 ```
 key{value}
@@ -234,18 +217,11 @@ key1{value}
 key2{value}
 ```
 
-##### mixed style {} and : (- and = applyes where the value is a string. wont wprk for leaf/nodes objects using{} )
-
-```
-key{value}
-key1=value;
-key2:value;
-```
-
 #### Used in:
    * https://github.com/circinusX1/car_infotainment
       * like: https://github.com/circinusX1/car_infotainment/blob/master/bin/carutza.kiss
-      and all the layouts definitions.
-      
+
+
+
 
 
