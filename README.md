@@ -26,10 +26,12 @@ x{
                   1000,
                   1000}
              color{355,255,0}
+             name{therect}
         }
         circle{
           center{@../shape/rect[0],@../shape/rect[1]}
           color{@x/x1/shape/rect/color}
+          name{tire}
           }
     }
     css_style:333;         # must end with ;
