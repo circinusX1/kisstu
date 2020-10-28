@@ -18,26 +18,28 @@
 x{
     # this is a comment
     %include:./included.css;
-    long{"a long string with escape \" and \\  and \} and \{ and \, characters and spaces must go between \"\" "}
-    short{a_string_with_no_spaces_or_escapes}
-    xi{
-        shape{
+    long_string{"a long string with escape \" and \\  and \} and \{ and \, characters and spaces must go between \"\" "}
+    a_string{a_string_with_no_spaces_or_escapes}
+    the_float{3.45}
+    the_hex{0xFFCD}
+    xi_object{
+        a_shape{
              rect{10,
                   10,
                   1000,
                   1000}
-             color{355,255,0}
-             name{therect}
+             with_color{355,255,0}
+             and_name{therect}
         }
-        circle{
+        and_a_circle{
           center{@../shape/rect[0],@../shape/rect[1]}
-          color{@x/x1/shape/rect/color}
-          name{tire}
+          with_color{@x/x1/shape/rect/color}
+          and_name{tire}
           }
     }
+    pi{3.14159264}
     css_style:333;         # must end with ;
     ini_style=has_column;  # must end with ;
-    
 }
 
 ```
@@ -75,14 +77,15 @@ x{
  
  ```cpp
   
-  float pi = std::stof ( aj["x"]["pi"].value() );
+   float pi = std::stof ( aj["x"]["pi"].value() );
 
 
-   const Cbdler::Node& pd = aka["x"]["list"]["object"];
+   const Cbdler::Node& pd = aka["x"]["xi_object"]["shape"];
    size_t  elems = pd.count();
    for(size_t i=0;i<pd.count();i++)
    {
         const std::string& v = pd.value(i);
+        // know the type and convert it. 
         OOO << v.c_str() << "\n";
    }
    
