@@ -18,7 +18,8 @@
 x{
     # this is a comment
     %include:./included.css;
-    long{"a long string with escape \" and \\  and \} and \{ and \, characters "}
+    long{"a long string with escape \" and \\  and \} and \{ and \, characters and spaces must go between \"\" "}
+    short{a_string_with_no_spaces_or_escapes}
     xi{
         shape{
              rect{10,
