@@ -6,10 +6,8 @@
 
 
   * No-more quotes.
-  * No difference between array and a single value.
-  * String based. 
-      * Why have " " for strings when the value type has to be known at coding time 99.9% of the time,
-        and anyway anything that's not string is converted by weirdo in-parser api's.
+  * No difference between array and a single value, numbers or strings.
+      * convertion at user hand
   * Has includes.
   * Has references.
   * Has comments
