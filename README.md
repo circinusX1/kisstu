@@ -1,7 +1,7 @@
 # CBDL Curly Bracket Document Layout
 ### DRAFT ISSUED ON: Sept 25 2020
 #### FreeBSD License
-#### Existent parser is for demo purposes.
+#### Existent parser is for demo purposes. 400 lines parser
 ######  Please  Join if you find it usefull. In need for parsers for: JS, PHP and C++
 
 
