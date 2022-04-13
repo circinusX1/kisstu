@@ -18,7 +18,8 @@
 x{
     # this is a comment
     %include:./included.css;
-    long_string{"a long string with escape \" and \\  and \} and \{ and \, characters and spaces must go between \"\" "}
+    # tokens to escape in a string  , : { } " 
+    long_string{"a long string with escape \" and \\  and \} and \: and \{ and \, characters and spaces must go between \"\" "}
     a_string{a_string_with_no_spaces_or_escapes}
     the_float{3.45}
     the_hex{0xFFCD}
